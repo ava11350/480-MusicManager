@@ -10,7 +10,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class TitleScene extends Application {
     private TextField username;
@@ -58,6 +62,10 @@ public class TitleScene extends Application {
                 if(pass.equals("Password")){
                     UserScene userScene = new UserScene(user);
                     primaryStage.setScene(userScene.getScene());
+                    MysqlCon temp = new MysqlCon();
+                    String ourQuery = "SELECT artists,name,year FROM musicDatabase WHERE artists LIKE \"%Frank Ocean%\"";
+                    temp.getQuery(ourQuery);
+
                 }
             }
         });
@@ -71,4 +79,7 @@ public class TitleScene extends Application {
         mainBox.setAlignment(Pos.CENTER);
         mainBox.setSpacing(20);
     }
+
+
+
 }
