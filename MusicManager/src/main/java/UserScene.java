@@ -22,10 +22,12 @@ public class UserScene {
     void initScene(){
         TextField artistSearch = new TextField();
         TextField songSearch = new TextField();
+        TextField yearSearch = new TextField();
         searchButton = new Button("Search");
         artistSearch.setPromptText("Artist");
         songSearch.setPromptText("Song Name");
-        VBox searchTextBox = new VBox(artistSearch, songSearch);
+        yearSearch.setPromptText("Year");
+        VBox searchTextBox = new VBox(artistSearch, songSearch, yearSearch);
         HBox searchField = new HBox(searchTextBox, searchButton);
         ListView<String> searchResults = new ListView<String>();
         VBox mainBox = new VBox(searchField,searchResults);

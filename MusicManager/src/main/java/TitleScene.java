@@ -119,6 +119,8 @@ public class TitleScene extends Application {
                 String artistQuery = temp.getText();
                 temp = (TextField) v.getChildren().get(1);
                 String songQuery = temp.getText();
+                temp = (TextField) v.getChildren().get(2);
+                String yearQuery = temp.getText();
 
                 // Generate query string
                 MysqlCon searchCon = new MysqlCon();
@@ -126,10 +128,18 @@ public class TitleScene extends Application {
                 if(artistQuery!=null){
                     searchQuery = searchQuery + " artists LIKE \"%" + artistQuery + "%\"";
                     if(songQuery != null){
-                        searchQuery = searchQuery + "AND name LIKE \"%" + songQuery + "%\"";
+                        searchQuery = searchQuery + " AND name LIKE \"%" + songQuery + "%\"";
+                    }
+                    if(yearQuery != null){
+                        searchQuery = searchQuery + " AND year = " + yearQuery;
                     }
                 }else if(songQuery != null){
                     searchQuery = searchQuery + " name LIKE \"%" + songQuery + "%\"";
+                    if(yearQuery != null){
+                        searchQuery = searchQuery + " AND year =" + yearQuery;
+                    }
+                }else if(yearQuery != null){
+                    searchQuery = searchQuery + " year =" + yearQuery;
                 }else{
                     searchQuery = "NO";
                 }
