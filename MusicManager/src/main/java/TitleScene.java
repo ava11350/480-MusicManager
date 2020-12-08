@@ -21,7 +21,13 @@ public class TitleScene extends Application {
     private PasswordField password;
     private Button loginButton;
     private HBox loginBox;
+    private TextField sqlUserField;
+    private PasswordField sqlPassField;
+    private HBox sqlBox;
     private VBox mainBox;
+
+    private static String sqlUser;
+    private static String sqlPass;
 
     private boolean loggedIn = false;
 
@@ -43,9 +49,17 @@ public class TitleScene extends Application {
 
         loginBox = new HBox(username, password, loginButton);
 
+
+        sqlUserField = new TextField();
+        sqlUserField.setPromptText("Database username");
+        sqlPassField = new PasswordField();
+        sqlPassField.setPromptText("Database Password");
+
+        sqlBox = new HBox(sqlUserField,sqlPassField);
+
         Text temporaryHint = new Text("Temp User: Admin Pass: Password");
 
-        mainBox = new VBox(loginBox, temporaryHint);
+        mainBox = new VBox(loginBox,sqlBox, temporaryHint);
 
         setEnv();
 
@@ -60,21 +74,34 @@ public class TitleScene extends Application {
             // TODO add password handling for more than one user
             if(user.equals("Admin")){
                 if(pass.equals("Password")){
-                    UserScene userScene = new UserScene(user);
-                    primaryStage.setScene(userScene.getScene());
-                    //MysqlCon temp = new MysqlCon();
-                    //String ourQuery = "SELECT artists,name,year FROM musicDatabase WHERE artists LIKE \"%Frank Ocean%\"";
-                    //temp.getQuery(ourQuery);
+                    try{
+                        // Test our connection to make sure the database login works. If so, change scene.
+                        MysqlCon temp = new MysqlCon();
+                        String testQuery = "SELECT artists,name,year FROM musicDatabase WHERE artists LIKE \"%Frank Ocean%\"";
+                        temp.getQuery(testQuery, sqlUserField.getText(), sqlPassField.getText());
 
+                        sqlUser = sqlUserField.getText();
+                        sqlPass = sqlPassField.getText();
+
+                        UserScene userScene = new UserScene(user);
+                        primaryStage.setScene(userScene.getScene());
+                    }catch(Exception f){
+                        System.out.println(f);
+                        System.out.println("Please enter a correct database login");
+                    }
                 }
             }
         });
     }
 
     private void setEnv(){
-        loginBox.setPrefHeight(500);
+        loginBox.setPrefHeight(400);
         loginBox.setAlignment(Pos.CENTER);
         loginBox.setSpacing(30);
+
+        sqlBox.setPrefHeight(200);
+        sqlBox.setAlignment(Pos.CENTER);
+        sqlBox.setSpacing(30);
 
         mainBox.setAlignment(Pos.CENTER);
         mainBox.setSpacing(20);
@@ -116,16 +143,16 @@ public class TitleScene extends Application {
                 if(searchQuery.equals("NO")){
                     resultsView.getItems().add("Nothing was entered to search for.");
                 }else{
-                    List<String> answer = searchCon.getQuery(searchQuery);
-                    for(String line : answer){
-                        resultsView.getItems().add(line);
+                    try{
+                        List<String> answer = searchCon.getQuery(searchQuery, sqlUser, sqlPass);
+                        for(String line : answer){
+                            resultsView.getItems().add(line);
+                        }
+                    }catch(Exception e){
+                        System.out.println(e);
                     }
-
                 }
-
-
             }
         };
     }
-
 }
