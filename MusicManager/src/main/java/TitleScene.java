@@ -15,6 +15,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TitleScene extends Application {
@@ -196,4 +197,379 @@ public class TitleScene extends Application {
             }
         };
     }
+
+    public String getID( String theArtist, String theName) {
+        String theID = " ";
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+
+            String IDQuery = "SELECT id FROM musicDatabase WHERE `name` LIKE \"%" + theName + "%\"" + "AND " +
+                    "WHERE artists LIKE \"%" + theArtist + "%\"";
+            ResultSet rs = stmt.executeQuery(IDQuery);
+            theID = rs.getString("id");
+        }catch(Exception f){
+        System.out.println(f);
+        System.out.println("Please enter a correct database login");
+        }
+        return theID;
+    }
+
+
+
+    //returns query based on year of song
+    public List<String> getYear(String ID) throws Exception{
+        int theYear;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theYear = rs.getInt("year");
+
+            String getResultsYear = "SELECT artists, `name`, `year` " +
+                    "FROM musicdatabase " +
+                    "WHERE year = " + theYear +
+                    " ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResultsYear);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+
+    public List<String> getArtist(String ID) throws Exception{
+        String theArtist;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT artists FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theArtist = rs.getString("artists");
+
+            String getResultsArtist =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE artists = " + theArtist +
+                            " ORDER BY RAND() LIMIT 10;";
+
+            rs = stmt.executeQuery(getResultsArtist);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+
+
+    public List<String> getAcousticness(String ID) throws Exception{
+        float theAcoust;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theAcoust = rs.getFloat("acousticness");
+
+            String getResults =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE acousticness >= " + theAcoust + "- 0.05 and acousticness <= " + theAcoust +
+                            "+ 0.05 ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResults);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+
+
+
+    public List<String> getDanceability(String ID) throws Exception{
+        float theDanceability;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theDanceability = rs.getFloat("danceability");
+
+            String getResults =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE danceability >= " + theDanceability + "- 0.08 and danceability <= " + theDanceability +
+                            "+ 0.08 ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResults);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+
+
+    public List<String> getEnergy(String ID) throws Exception{
+        float theEnergy;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theEnergy = rs.getFloat("energy");
+
+            String getResults =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE energy >= " + theEnergy + "- 0.05 and energy <= " + theEnergy +
+                            "+ 0.05 ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResults);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+    public List<String> getInstrumentalness(String ID) throws Exception{
+        float theInst;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theInst = rs.getFloat("instrumentalness");
+
+            String getResults =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE instrumentalness >= " + theInst + "- 0.10 and instrumentalness <= " + theInst +
+                            "+ 0.10 ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResults);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+    public List<String> getLiveness(String ID) throws Exception{
+        float theLive;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theLive = rs.getFloat("liveliness");
+
+            String getResults =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE liveliness >= " + theLive + "- 0.08 and liveliness <= " + theLive +
+                            "+ 0.08 ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResults);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+
+
+    public List<String> getSpeechiness(String ID) throws Exception{
+        float theSpeech;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theSpeech = rs.getFloat("speechiness");
+
+            String getResults =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE speechiness >= " + theSpeech + "- 0.08 and speechiness <= " + theSpeech +
+                            "+ 0.08 ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResults);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+
+
+    public List<String> getTempo(String ID) throws Exception{
+        float theTempo;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theTempo = rs.getFloat("tempo");
+
+            String getResults =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE tempo >= " + theTempo + "- 8 and tempo <= " + theTempo +
+                            "+ 8 ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResults);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+    public List<String> getValence(String ID) throws Exception{
+        float theValence;
+        List<String> results = new ArrayList<>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
+            System.out.println("Connection made.");
+            Statement stmt = con.createStatement();
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            ResultSet rs = stmt.executeQuery(getYearQuery);
+            theValence = rs.getFloat("valence");
+
+            String getResults =
+                    "SELECT artists, `name`, `year` " +
+                            "FROM musicdatabase \n" +
+                            " WHERE valence >= " + theValence + "- 0.08 and valence <= " + theValence +
+                            "+ 0.08 ORDER BY RAND() LIMIT 10";
+
+            rs = stmt.executeQuery(getResults);
+
+            if(rs!=null){
+                System.out.println("Result from query acquired.");
+            }
+            while(rs.next()) {
+                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+            }
+
+        }catch(Exception f){
+            System.out.println(f);
+            System.out.println("Please enter a correct database login");
+        }
+        return results;
+    }
+
+
 }
