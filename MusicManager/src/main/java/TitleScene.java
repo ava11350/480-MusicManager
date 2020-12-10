@@ -4,6 +4,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -107,6 +108,18 @@ public class TitleScene extends Application {
         mainBox.setSpacing(20);
     }
 
+    public static EventHandler<MouseEvent> getRecs(){
+        return new EventHandler<MouseEvent>(){
+            public void handle(MouseEvent t){
+                ListView<String> searchResults = (ListView<String>) t.getSource();
+                HBox display = (HBox) searchResults.getParent();
+                ListView<String> recResults = (ListView<String>) display.getChildren().get(1);
+                recResults.getItems().add("Test");
+                recResults.getItems().add(searchResults.getSelectionModel().getSelectedItem());
+            }
+        };
+    }
+
     public static EventHandler<ActionEvent> searchButtonClick(){
         return new EventHandler<ActionEvent>() {
             public void handle(ActionEvent t){
@@ -116,16 +129,31 @@ public class TitleScene extends Application {
                 HBox h = (HBox) b.getParent();
                 VBox v = (VBox) h.getChildren().get(0);
                 TextField temp = (TextField) v.getChildren().get(0);
-                String artistQuery = temp.getText();
+                String artistQuery;
+                if(!temp.getText().trim().isEmpty()){
+                    artistQuery = temp.getText();
+                }else{
+                    artistQuery = null;
+                }
                 temp = (TextField) v.getChildren().get(1);
-                String songQuery = temp.getText();
+                String songQuery;
+                if(!temp.getText().trim().isEmpty()){
+                    songQuery = temp.getText();
+                }else{
+                    songQuery = null;
+                }
                 temp = (TextField) v.getChildren().get(2);
-                String yearQuery = temp.getText();
+                String yearQuery;
+                if(!temp.getText().trim().isEmpty()){
+                    yearQuery = temp.getText();
+                }else{
+                    yearQuery=null;
+                }
 
                 // Generate query string
                 MysqlCon searchCon = new MysqlCon();
                 String searchQuery = "SELECT artists,name,year FROM musicDatabase WHERE";
-                if(artistQuery!=null){
+                if(artistQuery!= null){
                     searchQuery = searchQuery + " artists LIKE \"%" + artistQuery + "%\"";
                     if(songQuery != null){
                         searchQuery = searchQuery + " AND name LIKE \"%" + songQuery + "%\"";
@@ -146,7 +174,9 @@ public class TitleScene extends Application {
 
                 // Find the ListView to enter results to.
                 VBox main = (VBox) h.getParent();
-                ListView<String> resultsView = (ListView<String>) main.getChildren().get(1);
+                HBox displayArea = (HBox) main.getChildren().get(1);
+                ListView<String> resultsView = (ListView<String>) displayArea.getChildren().get(0);
+                ListView<String> recommendationResults = (ListView<String>) displayArea.getChildren().get(1);
                 resultsView.getItems().clear();
 
                 // Run query if successfully generated string
@@ -159,6 +189,7 @@ public class TitleScene extends Application {
                             resultsView.getItems().add(line);
                         }
                     }catch(Exception e){
+                        System.out.println(searchQuery);
                         System.out.println(e);
                     }
                 }

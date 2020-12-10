@@ -30,11 +30,14 @@ public class UserScene {
         VBox searchTextBox = new VBox(artistSearch, songSearch, yearSearch);
         HBox searchField = new HBox(searchTextBox, searchButton);
         ListView<String> searchResults = new ListView<String>();
-        VBox mainBox = new VBox(searchField,searchResults);
+        ListView<String> recommendationResults = new ListView<String>();
+        HBox displayArea = new HBox(searchResults, recommendationResults);
+        VBox mainBox = new VBox(searchField,displayArea);
         mainBox.setAlignment(Pos.CENTER);
         ourScene = new Scene(mainBox, 1000, 1000);
 
         searchButton.setOnAction(TitleScene.searchButtonClick());
+        searchResults.setOnMouseClicked(TitleScene.getRecs());
     }
 
 
