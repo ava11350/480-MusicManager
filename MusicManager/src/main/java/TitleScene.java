@@ -1,4 +1,6 @@
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -40,7 +42,7 @@ public class TitleScene extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("Music Manager");
+        primaryStage.setTitle("Deitz Dynamic Ditty and Dance Directory");
 
         username = new TextField();
         username.setPromptText("Username");
@@ -107,22 +109,165 @@ public class TitleScene extends Application {
 
         mainBox.setAlignment(Pos.CENTER);
         mainBox.setSpacing(20);
+
+        mainBox.setStyle("-fx-background-color: #d220c2;");
     }
 
     public static EventHandler<ActionEvent> getRecs(){
         return new EventHandler<ActionEvent>(){
-            public void handle(ActionEvent t){
+            public void handle(ActionEvent t) {
                 Button b = (Button) t.getSource();
                 VBox bBox = (VBox) b.getParent();
                 HBox searchBox = (HBox) bBox.getParent();
+                ComboBox comboBox = (ComboBox) searchBox.getChildren().get(1);
                 VBox main = (VBox) searchBox.getParent();
                 HBox display = (HBox) main.getChildren().get(1);
                 ListView<String> searchResults = (ListView<String>) display.getChildren().get(0);
                 //ListView<String> searchResults = (ListView<String>) t.getSource();
                 //HBox display = (HBox) searchResults.getParent();
                 ListView<String> recResults = (ListView<String>) display.getChildren().get(1);
-                recResults.getItems().add("Test");
-                recResults.getItems().add(searchResults.getSelectionModel().getSelectedItem());
+
+                recResults.getItems().clear();
+
+                String results = searchResults.getSelectionModel().getSelectedItem();
+                if (results != null) {
+                    char[] chars = results.toCharArray();
+
+                    StringBuilder temp = new StringBuilder();
+                    StringBuilder temp2 = new StringBuilder();
+
+                    int wordCount = 1;
+
+                    for (char x : chars) {
+                        if (x != ']' && wordCount == 1) {
+                            temp.append(x);
+                        } else if (x == ']' && wordCount == 1) {
+                            temp.append(x);
+                            wordCount += 1;
+                        } else if (x == ' ' && wordCount == 2) {
+                            wordCount += 1;
+                        } else {
+                            temp2.append(x);
+                        }
+                    }
+
+                    String artist = temp.toString();
+                    String everythingElse = temp2.toString();
+                    String songName = everythingElse.substring(0, everythingElse.length() - 5);
+                    String yearVal = everythingElse.substring(everythingElse.length() - 4);
+
+                    MysqlCon recCon = new MysqlCon();
+
+                    recResults.getItems().clear();
+
+                    String ourRecType = (String) comboBox.getSelectionModel().getSelectedItem();
+
+                    ObservableList<String> resultsView = FXCollections.observableArrayList();
+
+                    String id = getID(artist, songName);
+                    try {
+
+                        switch (ourRecType) {
+                            case "Year":
+                                resultsView = FXCollections.observableArrayList(getYear(id));
+                                break;
+                            case "Artist":
+                                resultsView = FXCollections.observableArrayList(getArtist(id));
+                                break;
+                            case "Acousticness":
+                                resultsView = FXCollections.observableArrayList(getAcousticness(id));
+                                break;
+                            case "Danceability":
+                                resultsView = FXCollections.observableArrayList(getDanceability(id));
+                                break;
+                            case "Energy":
+                                resultsView = FXCollections.observableArrayList(getEnergy(id));
+                                break;
+                            case "Instrumentalness":
+                                resultsView = FXCollections.observableArrayList(getInstrumentalness(id));
+                                break;
+                            case "Liveness":
+                                resultsView = FXCollections.observableArrayList(getLiveness(id));
+                                break;
+                            case "Speechiness":
+                                resultsView = FXCollections.observableArrayList(getSpeechiness(id));
+                                break;
+                            case "Tempo":
+                                resultsView = FXCollections.observableArrayList(getTempo(id));
+                                break;
+                            case "Valence":
+                                resultsView = FXCollections.observableArrayList(getValence(id));
+                                break;
+                            case "I'm Feeling Groovy":
+                                String recQuery = "SELECT (danceability * 100),name,year FROM musicDatabase WHERE";
+                                if (artist != null) {
+                                    recQuery = recQuery + " artists LIKE \"%" + artist + "%\"";
+                                    if (songName != null) {
+                                        recQuery = recQuery + " AND name LIKE \"%" + songName + "%\"";
+                                    }
+                                    if (yearVal != null) {
+                                        recQuery = recQuery + " AND year LIKE " + yearVal;
+                                    }
+                                } else if (songName != null) {
+                                    recQuery = recQuery + " name LIKE \"%" + songName + "%\"";
+                                    if (yearVal != null) {
+                                        recQuery = recQuery + " AND year =" + yearVal;
+                                    }
+                                } else if (yearVal != null) {
+                                    recQuery = recQuery + " year =" + yearVal;
+                                } else {
+                                    recQuery = "NO";
+                                }
+                                String danceabilityResult = null;
+
+                                try {
+                                    List<String> answer = recCon.getQuery(recQuery, sqlUser, sqlPass);
+                                    if (answer.size() != 0) {
+                                        danceabilityResult = answer.get(0);
+                                    }
+                                } catch (Exception e) {
+                                    System.out.println(recQuery);
+                                    System.out.println(e);
+                                }
+                                char[] resultBuilder = danceabilityResult.toCharArray();
+
+                                StringBuilder temp3 = new StringBuilder();
+
+                                for (char x : resultBuilder) {
+                                    if (Character.isDigit(x) || x == '.') {
+                                        temp3.append(x);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                String danceabilityVal = temp3.toString();
+
+                                String recQuery2 = "SELECT artists,name,year FROM musicDatabase WHERE (danceability * 100) <= ("
+                                        + danceabilityVal + " + 5) AND  (danceability * 100) >= ("
+                                        + danceabilityVal + " - 5) AND year <= ("
+                                        + yearVal + " + 10) AND year >= ("
+                                        + yearVal + " - 10) ORDER BY Rand() LIMIT 16";
+
+                                try {
+                                    List<String> answer = recCon.getQuery(recQuery2, sqlUser, sqlPass);
+                                    resultsView = FXCollections.observableArrayList(answer);
+                                } catch (Exception e) {
+                                    System.out.println(recQuery2);
+                                    System.out.println(e);
+                                }
+                                break;
+                            default:
+                                // shouldn't get here
+                                resultsView = FXCollections.observableArrayList("No results returned.");
+                                break;
+                        }
+                    }catch(Exception e){
+                        System.out.println(e);
+                    }
+                    recResults.setItems(resultsView);
+                }else{
+                    recResults.getItems().add("No song selected to get recommendations for.");
+                }
             }
         };
     }
@@ -205,18 +350,20 @@ public class TitleScene extends Application {
         };
     }
 
-    public String getID( String theArtist, String theName) {
+    public static String getID( String theArtist, String theName) {
         String theID = " ";
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
             System.out.println("Connection made.");
             Statement stmt = con.createStatement();
-
-            String IDQuery = "SELECT id FROM musicDatabase WHERE `name` LIKE \"%" + theName + "%\"" + "AND " +
-                    "WHERE artists LIKE \"%" + theArtist + "%\"";
+            theArtist = theArtist.split("\'")[1];
+            String IDQuery = "SELECT id, name, artists FROM musicDatabase WHERE name LIKE \"%" + theName + "%\"" + "AND " + "artists LIKE \"%" + theArtist + "%\"";
             ResultSet rs = stmt.executeQuery(IDQuery);
-            theID = rs.getString("id");
+            if(rs!=null){
+                rs.next();
+                theID = rs.getString("id");
+            }
         }catch(Exception f){
         System.out.println(f);
         System.out.println("Please enter a correct database login");
@@ -227,8 +374,8 @@ public class TitleScene extends Application {
 
 
     //returns query based on year of song
-    public List<String> getYear(String ID) throws Exception{
-        int theYear;
+    public static List<String> getYear(String ID) throws Exception{
+        int theYear=0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -237,11 +384,14 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theYear = rs.getInt("year");
+            if(rs!=null){
+                rs.next();
+                theYear = rs.getInt("year");
+            }
 
-            String getResultsYear = "SELECT artists, `name`, `year` " +
+            String getResultsYear = "SELECT artists, name, year " +
                     "FROM musicdatabase " +
-                    "WHERE year = " + theYear +
+                    "WHERE year = " + Integer.toString(theYear) +
                     " ORDER BY RAND() LIMIT 10";
 
             rs = stmt.executeQuery(getResultsYear);
@@ -261,23 +411,28 @@ public class TitleScene extends Application {
     }
 
 
-    public List<String> getArtist(String ID) throws Exception{
-        String theArtist;
+    public static List<String> getArtist(String ID) throws Exception{
+        String theArtist ="";
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MusicManager", sqlUser, sqlPass);
             System.out.println("Connection made.");
             Statement stmt = con.createStatement();
-            String getYearQuery = "SELECT artists FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
+            String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theArtist = rs.getString("artists");
+            if(rs!=null){
+                rs.next();
+                theArtist = rs.getString("artists");
+                theArtist = theArtist.split("'")[1];
+            }
+
 
             String getResultsArtist =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
-                            " WHERE artists = " + theArtist +
-                            " ORDER BY RAND() LIMIT 10;";
+                    "SELECT artists, name, year " +
+                            "FROM musicdatabase" +
+                            " WHERE artists LIKE \"%" + theArtist +
+                            "%\" ORDER BY RAND() LIMIT 10;";
 
             rs = stmt.executeQuery(getResultsArtist);
 
@@ -285,7 +440,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){
@@ -297,8 +452,8 @@ public class TitleScene extends Application {
 
 
 
-    public List<String> getAcousticness(String ID) throws Exception{
-        float theAcoust;
+    public static List<String> getAcousticness(String ID) throws Exception{
+        float theAcoust = 0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -307,11 +462,14 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theAcoust = rs.getFloat("acousticness");
+            if(rs!=null) {
+                rs.next();
+                theAcoust = rs.getFloat("acousticness");
+            }
 
             String getResults =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
+                    "SELECT artists, name, year " +
+                            "FROM musicdatabase" +
                             " WHERE acousticness >= " + theAcoust + "- 0.05 and acousticness <= " + theAcoust +
                             "+ 0.05 ORDER BY RAND() LIMIT 10";
 
@@ -321,7 +479,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){
@@ -334,8 +492,8 @@ public class TitleScene extends Application {
 
 
 
-    public List<String> getDanceability(String ID) throws Exception{
-        float theDanceability;
+    public static List<String> getDanceability(String ID) throws Exception{
+        float theDanceability=0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -344,11 +502,14 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theDanceability = rs.getFloat("danceability");
+            if(rs!=null) {
+                rs.next();
+                theDanceability = rs.getFloat("danceability");
+            }
 
             String getResults =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
+                    "SELECT artists, name, year " +
+                            "FROM musicdatabase" +
                             " WHERE danceability >= " + theDanceability + "- 0.08 and danceability <= " + theDanceability +
                             "+ 0.08 ORDER BY RAND() LIMIT 10";
 
@@ -358,7 +519,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){
@@ -370,8 +531,8 @@ public class TitleScene extends Application {
 
 
 
-    public List<String> getEnergy(String ID) throws Exception{
-        float theEnergy;
+    public static List<String> getEnergy(String ID) throws Exception{
+        float theEnergy=0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -380,11 +541,14 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theEnergy = rs.getFloat("energy");
+            if(rs!=null) {
+                rs.next();
+                theEnergy = rs.getFloat("energy");
+            }
 
             String getResults =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
+                    "SELECT artists, name, year " +
+                            "FROM musicdatabase" +
                             " WHERE energy >= " + theEnergy + "- 0.05 and energy <= " + theEnergy +
                             "+ 0.05 ORDER BY RAND() LIMIT 10";
 
@@ -394,7 +558,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){
@@ -404,8 +568,8 @@ public class TitleScene extends Application {
         return results;
     }
 
-    public List<String> getInstrumentalness(String ID) throws Exception{
-        float theInst;
+    public static List<String> getInstrumentalness(String ID) throws Exception{
+        float theInst=0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -414,11 +578,14 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theInst = rs.getFloat("instrumentalness");
+            if(rs!=null) {
+                rs.next();
+                theInst = rs.getFloat("instrumentalness");
+            }
 
             String getResults =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
+                    "SELECT artists, name, year " +
+                            "FROM musicdatabase" +
                             " WHERE instrumentalness >= " + theInst + "- 0.10 and instrumentalness <= " + theInst +
                             "+ 0.10 ORDER BY RAND() LIMIT 10";
 
@@ -428,7 +595,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){
@@ -438,8 +605,8 @@ public class TitleScene extends Application {
         return results;
     }
 
-    public List<String> getLiveness(String ID) throws Exception{
-        float theLive;
+    public static List<String> getLiveness(String ID) throws Exception{
+        float theLive=0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -448,12 +615,15 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theLive = rs.getFloat("liveliness");
+            if(rs!=null) {
+                rs.next();
+                theLive = rs.getFloat("liveness");
+            }
 
             String getResults =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
-                            " WHERE liveliness >= " + theLive + "- 0.08 and liveliness <= " + theLive +
+                    "SELECT artists, name, year " +
+                            "FROM musicdatabase" +
+                            " WHERE liveness >= " + theLive + "- 0.08 and liveness <= " + theLive +
                             "+ 0.08 ORDER BY RAND() LIMIT 10";
 
             rs = stmt.executeQuery(getResults);
@@ -462,7 +632,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){
@@ -474,8 +644,8 @@ public class TitleScene extends Application {
 
 
 
-    public List<String> getSpeechiness(String ID) throws Exception{
-        float theSpeech;
+    public static List<String> getSpeechiness(String ID) throws Exception{
+        float theSpeech=0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -484,11 +654,14 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theSpeech = rs.getFloat("speechiness");
+            if(rs!=null) {
+                rs.next();
+                theSpeech = rs.getFloat("speechiness");
+            }
 
             String getResults =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
+                    "SELECT artists, name, year, tempo " +
+                            "FROM musicdatabase" +
                             " WHERE speechiness >= " + theSpeech + "- 0.08 and speechiness <= " + theSpeech +
                             "+ 0.08 ORDER BY RAND() LIMIT 10";
 
@@ -498,7 +671,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){
@@ -510,8 +683,8 @@ public class TitleScene extends Application {
 
 
 
-    public List<String> getTempo(String ID) throws Exception{
-        float theTempo;
+    public static List<String> getTempo(String ID) throws Exception{
+        float theTempo=0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -520,11 +693,14 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theTempo = rs.getFloat("tempo");
+            if(rs!=null) {
+                rs.next();
+                theTempo = rs.getFloat("tempo");
+            }
 
             String getResults =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
+                    "SELECT artists, name, year " +
+                            "FROM musicdatabase" +
                             " WHERE tempo >= " + theTempo + "- 8 and tempo <= " + theTempo +
                             "+ 8 ORDER BY RAND() LIMIT 10";
 
@@ -534,7 +710,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){
@@ -544,8 +720,8 @@ public class TitleScene extends Application {
         return results;
     }
 
-    public List<String> getValence(String ID) throws Exception{
-        float theValence;
+    public static List<String> getValence(String ID) throws Exception{
+        float theValence=0;
         List<String> results = new ArrayList<>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -554,11 +730,14 @@ public class TitleScene extends Application {
             Statement stmt = con.createStatement();
             String getYearQuery = "SELECT * FROM musicDatabase WHERE id LIKE \"%" + ID + "%\"";
             ResultSet rs = stmt.executeQuery(getYearQuery);
-            theValence = rs.getFloat("valence");
+            if(rs!=null) {
+                rs.next();
+                theValence = rs.getFloat("valence");
+            }
 
             String getResults =
-                    "SELECT artists, `name`, `year` " +
-                            "FROM musicdatabase \n" +
+                    "SELECT artists, name, year " +
+                            "FROM musicdatabase" +
                             " WHERE valence >= " + theValence + "- 0.08 and valence <= " + theValence +
                             "+ 0.08 ORDER BY RAND() LIMIT 10";
 
@@ -568,7 +747,7 @@ public class TitleScene extends Application {
                 System.out.println("Result from query acquired.");
             }
             while(rs.next()) {
-                results.add(rs.getString("artists")+ " " + rs.getString("`name`") + " " + rs.getInt("`year`"));
+                results.add(rs.getString("artists")+ " " + rs.getString("name") + " " + rs.getInt("year"));
             }
 
         }catch(Exception f){

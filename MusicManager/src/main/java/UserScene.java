@@ -74,7 +74,7 @@ public class UserScene {
         searchButton.setOnAction(TitleScene.searchButtonClick());
         recsButton.setOnAction(TitleScene.getRecs());
 
-
+        mainBox.setStyle("-fx-background-color: #d220c2;");
     }
 
 
