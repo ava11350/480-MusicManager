@@ -127,7 +127,8 @@ public class TitleScene extends Application {
 
                 // Get the entered text in search TextFields
                 Button b = (Button) t.getSource();
-                HBox h = (HBox) b.getParent();
+                VBox bBox = (VBox) b.getParent();
+                HBox h = (HBox) bBox.getParent();
                 VBox v = (VBox) h.getChildren().get(0);
                 TextField temp = (TextField) v.getChildren().get(0);
                 String artistQuery;

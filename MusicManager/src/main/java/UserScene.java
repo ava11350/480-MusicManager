@@ -16,6 +16,7 @@ public class UserScene {
     private String artistQuery;
     private String songQuery;
     private Button searchButton;
+    private Button recsButton;
 
     UserScene(String username){
         this.username = username;
@@ -42,12 +43,18 @@ public class UserScene {
         TextField yearSearch = new TextField();
         ComboBox comboBox = new ComboBox(recTypes);
         searchButton = new Button("Search");
+        searchButton.setPrefWidth(150);
+        recsButton = new Button("Get Recommendations");
+        recsButton.setPrefWidth(150);
         artistSearch.setPromptText("Artist");
         songSearch.setPromptText("Song Name");
         yearSearch.setPromptText("Year");
         VBox searchTextBox = new VBox(artistSearch, songSearch, yearSearch);
         searchTextBox.setSpacing(10);
-        HBox searchField = new HBox(searchTextBox, comboBox, searchButton);
+        VBox buttonBox = new VBox(searchButton, recsButton);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setSpacing(10);
+        HBox searchField = new HBox(searchTextBox, comboBox, buttonBox);
         searchField.setSpacing(10);
         searchField.setAlignment(Pos.CENTER);
         ListView<String> searchResults = new ListView<String>();
