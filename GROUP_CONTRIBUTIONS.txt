@@ -5,13 +5,14 @@ Ava Smith
 Database Initialization and Instructions
 Application Installation Instructions
 Setting up Application environment
+Create Java classes for project
 GUI (JavaFX)
 
 
 Alex Choi
 
 README
-I'm feeling lucky recommendations
+I'm feeling groovy recommendations
 Recommendation button event handler
 Debugging
 
@@ -21,3 +22,4 @@ Matt Lange
 SQL queries for generating recommendations
 SQL query to grab selected song ID
 Java functions/methods for grabbing results
+Streamlining selection process
