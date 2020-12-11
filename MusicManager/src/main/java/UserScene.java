@@ -72,7 +72,8 @@ public class UserScene {
         ourScene = new Scene(mainBox, 1000, 1000);
 
         searchButton.setOnAction(TitleScene.searchButtonClick());
-        searchResults.setOnMouseClicked(TitleScene.getRecs());
+        recsButton.setOnAction(TitleScene.getRecs());
+
 
     }
 

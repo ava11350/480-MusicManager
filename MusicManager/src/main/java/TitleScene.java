@@ -109,11 +109,17 @@ public class TitleScene extends Application {
         mainBox.setSpacing(20);
     }
 
-    public static EventHandler<MouseEvent> getRecs(){
-        return new EventHandler<MouseEvent>(){
-            public void handle(MouseEvent t){
-                ListView<String> searchResults = (ListView<String>) t.getSource();
-                HBox display = (HBox) searchResults.getParent();
+    public static EventHandler<ActionEvent> getRecs(){
+        return new EventHandler<ActionEvent>(){
+            public void handle(ActionEvent t){
+                Button b = (Button) t.getSource();
+                VBox bBox = (VBox) b.getParent();
+                HBox searchBox = (HBox) bBox.getParent();
+                VBox main = (VBox) searchBox.getParent();
+                HBox display = (HBox) main.getChildren().get(1);
+                ListView<String> searchResults = (ListView<String>) display.getChildren().get(0);
+                //ListView<String> searchResults = (ListView<String>) t.getSource();
+                //HBox display = (HBox) searchResults.getParent();
                 ListView<String> recResults = (ListView<String>) display.getChildren().get(1);
                 recResults.getItems().add("Test");
                 recResults.getItems().add(searchResults.getSelectionModel().getSelectedItem());
